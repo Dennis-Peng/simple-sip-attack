@@ -38,6 +38,11 @@ Note:
 }
 
 function main() {
+    if [[ "$#" == 0 ]]; then
+        showhelp
+        exit
+    fi
+
     while [ "$#" -gt 0 ]; do
         case $1 in
             -h|--help)
@@ -79,8 +84,6 @@ function main() {
         esac
         shift
     done
-
-    echo $IFACE
 
     echo ">>> Replaying background pcap $BACKGROUND_PCAP"
     tcpreplay -i $IFACE --pps $BACKGROUND_REPLAY_SPEED -K $BACKGROUND_PCAP &
