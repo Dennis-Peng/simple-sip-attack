@@ -1,0 +1,4 @@
+cachetools==5.3.2
+redis==5.0.1
+scapy==2.5.0
+

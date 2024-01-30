@@ -138,14 +138,16 @@ def analyze_packet(
 ):
     if IP not in packet:
         return None
-
+    packet_size = len(packet)
     src, dst = packet[IP].src, packet[IP].dst
     tcp_or_udp = None
     if UDP in packet:
         stat_counter['udp_packet'] += 1
         tcp_or_udp = UDP
+        stat_counter['udp_traffic'] += packet_size
     elif TCP in packet:
         stat_counter['tcp_packet'] += 1
+        stat_counter['tcp_traffic'] += packet_size
         tcp_or_udp = TCP
     else:
         return None
@@ -168,6 +170,7 @@ def analyze_packet(
         )
         if payloads is not None:
             stat_counter['sip_packet'] += 1
+            stat_counter['sip_traffic'] += packet_size
             return payloads
     return None
 
@@ -221,7 +224,16 @@ class NetFlowHandler(TaskThread):
         self.sess_cache = TTLCache(maxsize=sess_cache_size, ttl=sess_cache_ttl)
         self.packet_cache = TTLCache(maxsize=packet_cache_size, ttl=packet_cache_ttl)
         self.stat_counter = Counter(
-            {'packet': 0, 'udp_packet': 0, 'tcp_packet': 0, 'sip_packet': 0}
+            {
+                'packet': 0,  # num of packets
+                'udp_packet': 0,
+                'tcp_packet': 0,
+                'sip_packet': 0,
+                'traffic': 0,  # net traffic size
+                'udp_traffic': 0,
+                'tcp_traffic': 0,
+                'sip_traffic': 0,
+            }
         )
 
         super().__init__(
@@ -247,9 +259,10 @@ class NetFlowHandler(TaskThread):
             except Empty:
                 continue
 
-            print(packet, stat_counter)
+            # print(packet, stat_counter)
 
             stat_counter['packet'] += 1
+            stat_counter['traffic'] += len(packet)
             try:
                 payloads = analyze_packet(
                     packet,
@@ -309,6 +322,9 @@ class AttackDetector(TaskThread):
 
             # TODO: calculate dos attack based on session history
 
+            # Push stat info
+            if r is not None:
+                r.xadd('flow_count_stream', stat_counter)
             for k in stat_counter:
                 stat_counter[k] = 0
         return
