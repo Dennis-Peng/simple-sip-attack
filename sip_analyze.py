@@ -53,5 +53,29 @@ def unpack_sip(raw: str):
 
 
 def validate_sip(payloads: dict):
-    # TODO: validate rules
+    # TODO: finish the rules and the alerting action
+    required_keys = ['callid', 'from', 'to', 'type', 'Content-Length', 'CSeq']
+
+    # check necessary header
+    for key in required_keys:
+        if key not in payloads or not payloads[key]:
+            pass # FIXME report malformed data: missing mandatory header
+            # return f"错误：缺少必需的头部字段 '{key}' 或字段值为空。"
+    
+    # check header format
+    sip_uri_pattern = r'^sip:([^@]+)@([^\s>]+)$'
+    if not re.match(sip_uri_pattern, payloads['from']):
+        # return "错误：'From' 字段的值不是有效的 SIP URI。"
+        pass # FIXME report malformed data: malformed from URI
+    if not re.match(sip_uri_pattern, payloads['to']):
+        # return "错误：'To' 字段的值不是有效的 SIP URI。"
+        pass # FIXME report malformed data: malformed to URI
+    if not payloads['Content-Length'].isdigit():
+        pass # FIXME report malformed data: bad Content-Length format
+    if not re.match(r'^\d+\s+\w+', payloads['CSeq']):
+        pass # FIXME report malformed data: bad CSeq format
+    
+    # FIXME check unfinished line / malformed header field in raw string
+    # FIXME check if there exists a blank line at the end of header / between the header and the payload
+
     return True
