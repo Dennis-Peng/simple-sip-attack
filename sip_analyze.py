@@ -53,7 +53,6 @@ def unpack_sip(raw: str):
 
 
 def validate_sip(payloads: dict):
-    # TODO: finish the rules and the alerting
     required_keys = ['callid', 'from', 'to', 'type', 'Content-Length', 'CSeq']
 
     # check necessary header

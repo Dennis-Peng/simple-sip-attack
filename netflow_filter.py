@@ -263,6 +263,7 @@ class NetFlowHandler(TaskThread):
 
             stat_counter['packet'] += 1
             stat_counter['traffic'] += len(packet)
+            # NOTE: stat_counter have to calculate traffic/packets by area_code for map display
             try:
                 payloads = analyze_packet(
                     packet,
@@ -321,6 +322,10 @@ class AttackDetector(TaskThread):
                         print(v_new)
 
             # TODO: calculate dos attack based on session history
+            """
+            session cache基于call_id关联会话的,但是现在的DoS需要统计不同area_code对应的包个数/会话个数
+            基于现有结构进行统计有点麻烦
+            """
 
             # Push stat info
             if r is not None:
